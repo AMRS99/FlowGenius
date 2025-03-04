@@ -1,9 +1,11 @@
 import React from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
     const { store, dispatch } = useGlobalReducer();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -45,6 +47,7 @@ const SignUp = () => {
             if (response.ok) {
                 const data = await response.json();
                 dispatch({ type: 'signup_success', payload: data })
+                navigate('/login')
                 dispatch({ type: 'clear_form' })
             }
             else {

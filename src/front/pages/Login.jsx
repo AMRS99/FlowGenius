@@ -37,7 +37,8 @@ const Login = () =>{
             });
             if (response.ok) {
                 const data = await response.json();
-                dispatch({ type: 'login_success', payload: data })
+                console.log(data)
+                dispatch({ type: 'login', payload: data.user })
                 localStorage.setItem('token', data.access_token)
                 navigate('/dashboard')
                 dispatch({ type: 'clear_form' })
