@@ -4,6 +4,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 import { motion } from "framer-motion";
 import ScrollToTop from "../components/ScrollToTop";
 import Sidebar from "../components/Sidebar";
+import { Outlet } from "react-router-dom";
 
 const list = {
     visible: { opacity: 1 },
@@ -21,7 +22,7 @@ const Dashboard = () =>{
             <ScrollToTop>
                 <Navbar/>
                 <Sidebar/>
-                welcome to your Dashboard
+                <Outlet/>
             </ScrollToTop>
         </>
     )

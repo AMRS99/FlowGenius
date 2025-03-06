@@ -12,6 +12,11 @@ import { Demo } from "./pages/Demo";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Tasks from "./pages/Tasks";
+import Chat from "./pages/Chat";
+import Archives from "./pages/Archives";
+import Calendar from "./pages/Calendar";
+import Overview from "./pages/Overview";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
@@ -32,7 +37,13 @@ export const router = createBrowserRouter(
         {/* </Route> */} 
         <Route path="/signup" element={<SignUp />}/>
         <Route path="/" element={<Login />}/>
-        <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/dashboard" element={<Dashboard/>}>
+            <Route index element={<Overview/>}/>
+            <Route path="tasks" element={<Tasks/>}/>
+            <Route path="chat" element={<Chat/>}/>
+            <Route path="archives" element={<Archives/>}/>
+            <Route path="calendar" element={<Calendar/>}/>
+        </Route>
       </>
     )
 );
