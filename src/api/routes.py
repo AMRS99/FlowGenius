@@ -7,12 +7,18 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import os
 
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
 
+Upload_Folder='uploads'
+api.config['Upload_Folder'] = Upload_Folder
+
+if not os.path.exists(Upload_Folder):
+    os.makedirs(Upload_Folder)
 
 @api.route('/test', methods=["GET"])
 def test():
@@ -66,3 +72,19 @@ def login():
             'email': user.email
         }
         }), 200
+@api.route('/api/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'msg':"No file part"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"msg":'No selected file'}), 400
+    
+    filename = os.path.join(api.config['Upload_Folder'], file.filename)
+    file.save(filename)
+    return jsonify({'msg':"File uploaded successfully", "filename": file.filename}), 200
+@api.route('/api/files', methods=['GET'])
+def get_files():
+    files = os.listdir(api.config['Upload_Folder'])
+    return jsonify({'files':files}), 200
