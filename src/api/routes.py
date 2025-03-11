@@ -1,7 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import Flask, request, jsonify, url_for, Blueprint, send_from_directory
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
@@ -9,20 +9,20 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import os
 
+app = Flask(__name__)
+Upload_Folder = os.path.join(os.getcwd(), 'uploads')
+os.makedirs(Upload_Folder, exist_ok=True)
+app.config['Upload_Folder'] = Upload_Folder
+CORS(app)
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
 
-Upload_Folder='uploads'
-api.config['Upload_Folder'] = Upload_Folder
-
-if not os.path.exists(Upload_Folder):
-    os.makedirs(Upload_Folder)
 
 @api.route('/test', methods=["GET"])
 def test():
-    return jsonify(message= 'Everything is correct'), 200
+    return jsonify(message='Everything is correct'), 200
 
 
 @api.route('/auth/signup', methods=["POST"])
@@ -71,20 +71,41 @@ def login():
             'name': user.name,
             'email': user.email
         }
-        }), 200
-@api.route('/api/upload', methods=['POST'])
+    }), 200
+
+
+@api.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return jsonify({'msg':"No file part"}), 400
-    
+        return jsonify({'msg': "No file part"}), 400
+
     file = request.files['file']
     if file.filename == '':
-        return jsonify({"msg":'No selected file'}), 400
-    
-    filename = os.path.join(api.config['Upload_Folder'], file.filename)
+        return jsonify({"msg": 'No selected file'}), 400
+
+    filename = os.path.join(app.config['Upload_Folder'], file.filename)
     file.save(filename)
-    return jsonify({'msg':"File uploaded successfully", "filename": file.filename}), 200
-@api.route('/api/files', methods=['GET'])
+    file_url= f"https://crispy-succotash-5g4r7j4vqg7p2r67-3001.app.github.dev/uploads/{filename}"
+    return jsonify({'msg': "File uploaded successfully", "filename": file.filename, "file_URL": file_url}), 200
+
+@api.route('/files', methods=['GET'])
 def get_files():
-    files = os.listdir(api.config['Upload_Folder'])
-    return jsonify({'files':files}), 200
+    try:
+        files = os.listdir(app.config['Upload_Folder'])
+        files = [f for f in files if os.path.isfile(os.path.join(app.config['Upload_Folder'],f))]
+        return jsonify({"files": files}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@api.route('/file')
+def list_files():
+    files=[]
+    for filename in os.listdir(app.config["Upload_Folder"]):
+        file_url= f"https://crispy-succotash-5g4r7j4vqg7p2r67-3001.app.github.dev/api/files/{filename}"
+        files.append({"fileName":filename,"url":file_url})
+        return jsonify(files)
+@api.route('/files/<filename>')
+def get_file(filename):
+    return send_from_directory(app.config["Upload_Folder"], filename)
+
+app.register_blueprint(api)

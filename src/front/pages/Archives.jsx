@@ -1,20 +1,23 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
+import FileDisplay from "../components/FileCard";
 
 const Archives = () => {
-    const[archives, setArchives] = useState([]);
     const {store, dispatch} = useGlobalReducer();
     useEffect(() =>{
         const fetchFiles = async () =>{
-            const response = await fetch('https://crispy-succotash-5g4r7j4vqg7p2r67-3001.app.github.dev/api/api/files')
+            const response = await fetch('https://crispy-succotash-5g4r7j4vqg7p2r67-3001.app.github.dev/api/files')
             const data = await response.json();
             const fetchedFiles = data.files.map((file) =>({
                 id: file,
                 name: file,
                 date: new Date().toLocaleDateString(),
+                fileType: file,
+                url: file.file_URL,
+                isMenuOpen: false
             }));
-            fetchedFiles.array.forEach((file) => {
+            fetchedFiles.forEach((file) => {
                 dispatch({
                     type:'add_file',
                     payload:file
@@ -44,13 +47,6 @@ const Archives = () => {
         dispatch({type:'set_selected-file', payload: null})
     }
 
-    const handleFileDelete = (id) =>{
-        dispatch({
-            type:'remove_file',
-            payload:{id}
-        })
-    }
-
     return(
         <>
             <div className="p-6">
@@ -60,17 +56,12 @@ const Archives = () => {
                     <button onClick={handleFileUpload} className="bg-blue-500 text-white px-4 py-2 !rounded ml-2 hover:bg-blue-600">
                         Upload Archive
                     </button>
+                    {store.archives.length > 0 ? (
+                        <FileDisplay files={store.archives} />
+                    ):(
+                        <p className="text-gray-500 mt-4">No files available</p>
+                    )}
                 </div>
-                <ul className="bg-white shadow-lg !rounded-lg p-4">
-                    {store.archives.map((archive) =>(
-                        <li key={archive.id} className="border-b py-2 last:border-none">
-                            <span className="font-semibold">{archive.name}</span>
-                            <button onClick={() => handleFileDelete(archive.id)} className="text-red-500 ml-2 hover:underline">
-                                Delete
-                            </button>
-                        </li>
-                    ))}
-                </ul>
             </div>
         </>
     )

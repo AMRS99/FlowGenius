@@ -18,8 +18,28 @@ export const initialStore=()=>{
     recentActivity: [],
     statistics: {},
     archives: [],
-    selectedFile: null
+    selectedFile: null,
+    isMenuOpen: false
   }
+}
+
+const getFiletype = (fileName) =>{
+  const extension = fileName.split(".").pop().toLowerCase();
+  const fileTypes ={
+    pdf: "pdf",
+    png: "image",
+    jpg: "image",
+    jpeg: "image",
+    gif: "image",
+    doc: "doc",
+    docx: "doc",
+    xls: "excel",
+    xlsx: "excel",
+    ppt: "ppt",
+    pptx: "ppt",
+    txt: "text"
+  }
+  return fileTypes[extension] || "other";
 }
 
 export default function storeReducer(store, action = {}) {
@@ -53,7 +73,7 @@ export default function storeReducer(store, action = {}) {
           ...store,
           archives:[
             ...store.archives,
-            {id: store.archives.length + 1, name: action.payload.name, date: new Date().toLocaleDateString()},
+            {id: store.archives.length + 1, name: action.payload.name, date: new Date().toLocaleDateString(),fileType:getFiletype(action.payload.name), isMenuOpen: action.payload.isMenuOpen, url: action.payload.url},
           ]
         }
       case 'remove_file':
@@ -65,7 +85,12 @@ export default function storeReducer(store, action = {}) {
         return{
           ...store,
           selectedFile: action.payload,
-        }   
+        } 
+      case 'toggle_menu':
+        return{
+          ...store,
+          isMenuOpen: !store.isMenuOpen
+        }  
       case 'clear_form':
         return{
           ...initialStore
